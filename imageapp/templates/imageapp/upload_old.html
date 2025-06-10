@@ -1,0 +1,61 @@
+{% extends 'imageapp/base.html' %}
+
+{% block title %}Upload Images{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Upload Two Images</h1>
+    
+    <form id="uploadForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <!-- Submit Button -->
+        <button type="submit" class="btn-primary">Process</button>
+    </form>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center mt-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Processing...</span>
+        </div>
+        <p class="loading-text">Processing your images, please wait...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('uploadForm');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        form.addEventListener('submit', function() {
+            // Show the loading spinner
+            loadingSpinner.style.display = 'block';
+
+            // Disable the submit button to prevent multiple submissions
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            // Hide the form fields
+            form.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}
+
+

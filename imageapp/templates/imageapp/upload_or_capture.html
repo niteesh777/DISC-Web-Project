@@ -1,0 +1,167 @@
+<!-- imageapp/templates/imageapp/upload_or_capture.html -->
+{% extends 'imageapp/base.html' %}
+
+{% block title %}Select Image Input Method{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="mb-4">Select Image Input Method</h1>
+  
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+  
+  <div id="methodSelection" class="mb-4">
+    <button id="uploadOption" class="btn btn-primary">Upload Images</button>
+    <button id="captureOption" class="btn btn-secondary">Capture Images</button>
+  </div>
+
+  <!-- Upload Section (initially hidden) -->
+  <div id="uploadSection" style="display: none;">
+    <h2>Upload Images</h2>
+    <form id="uploadForm" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="mb-3">
+        {{ form.image1.label_tag }}<br>
+        {{ form.image1 }}
+        <img id="uploadPreview1" src="" alt="Upload Preview 1" style="max-width:150px; display:none; margin-top:10px;" />
+        {% if form.image1.errors %}
+          <div class="invalid-feedback d-block">{{ form.image1.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        {{ form.image2.label_tag }}<br>
+        {{ form.image2 }}
+        <img id="uploadPreview2" src="" alt="Upload Preview 2" style="max-width:150px; display:none; margin-top:10px;" />
+        {% if form.image2.errors %}
+          <div class="invalid-feedback d-block">{{ form.image2.errors }}</div>
+        {% endif %}
+      </div>
+      <button type="submit" class="btn btn-primary">Process</button>
+    </form>
+  </div>
+
+  <!-- Capture Section (initially hidden) -->
+  <div id="captureSection" style="display: none;">
+    <h2>Capture Images</h2>
+    <div class="camera-section mb-3">
+      <video id="camera" width="320" height="240" autoplay></video>
+      <br>
+      <button id="captureButton" type="button" class="btn btn-secondary mt-2">Capture</button>
+      <p id="captureMsg">Click to capture the first image. Then capture the second image with the same framing.</p>
+      <canvas id="snapshot" width="320" height="240" style="display: none;"></canvas>
+      <div class="preview-section mt-2">
+        <img id="preview1" src="" alt="First Capture Preview" style="max-width:150px; display:none; margin-right:10px;" />
+        <img id="preview2" src="" alt="Second Capture Preview" style="max-width:150px; display:none;" />
+      </div>
+    </div>
+    <form id="captureForm" method="post">
+      {% csrf_token %}
+      <input type="hidden" id="capturedImage1" name="capturedImage1" />
+      <input type="hidden" id="capturedImage2" name="capturedImage2" />
+      <button type="submit" class="btn btn-primary">Process</button>
+    </form>
+  </div>
+
+  <!-- Optional Loading Spinner -->
+  <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Processing...</span>
+    </div>
+    <p class="loading-text">Processing your images, please wait...</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Toggle between Upload and Capture sections
+  const uploadOption = document.getElementById('uploadOption');
+  const captureOption = document.getElementById('captureOption');
+  const uploadSection = document.getElementById('uploadSection');
+  const captureSection = document.getElementById('captureSection');
+
+  uploadOption.addEventListener('click', function() {
+    uploadSection.style.display = 'block';
+    captureSection.style.display = 'none';
+  });
+
+  captureOption.addEventListener('click', function() {
+    captureSection.style.display = 'block';
+    uploadSection.style.display = 'none';
+    // Initialize the camera stream
+    const video = document.getElementById('camera');
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => { video.srcObject = stream; })
+        .catch(error => { console.error('Error accessing camera:', error); });
+    }
+  });
+
+  // File upload preview using FileReader API
+  const image1Input = document.getElementById('id_image1');
+  const uploadPreview1 = document.getElementById('uploadPreview1');
+  if (image1Input) {
+    image1Input.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadPreview1.src = e.target.result;
+          uploadPreview1.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  const image2Input = document.getElementById('id_image2');
+  const uploadPreview2 = document.getElementById('uploadPreview2');
+  if (image2Input) {
+    image2Input.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadPreview2.src = e.target.result;
+          uploadPreview2.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Capture images via camera
+  let captureCount = 0;
+  const captureButton = document.getElementById('captureButton');
+  const canvas = document.getElementById('snapshot');
+  const captureMsg = document.getElementById('captureMsg');
+  const preview1 = document.getElementById('preview1');
+  const preview2 = document.getElementById('preview2');
+
+  captureButton.addEventListener('click', function() {
+    // Capture current frame from the video stream
+    canvas.getContext('2d').drawImage(document.getElementById('camera'), 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/png');
+    captureCount++;
+    if (captureCount === 1) {
+      document.getElementById('capturedImage1').value = imageData;
+      console.log("DEBUG: Captured image 1 set.", imageData.substring(0,50));
+      preview1.src = imageData;
+      preview1.style.display = 'block';
+      captureMsg.textContent = "First image captured. Please capture the second image with the same framing.";
+    } else if (captureCount === 2) {
+      document.getElementById('capturedImage2').value = imageData;
+      console.log("DEBUG: Captured image 2 set.", imageData.substring(0,50));
+      preview2.src = imageData;
+      preview2.style.display = 'block';
+      captureMsg.textContent = "Both images captured. You can now submit the form.";
+      // Stop the camera stream after two captures
+      document.getElementById('camera').srcObject.getTracks().forEach(track => track.stop());
+    } else {
+      alert("Only two images are required.");
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,230 @@
+<!-- templates/imageapp/base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}DISC Application{% endblock %}</title>
+    {% load static %}
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css"
+      integrity="sha384-KyZXEAg3QhqLMpG8r+... (use actual hash)"
+      crossorigin="anonymous"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <!-- Your navigation bar content -->
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">DISC Application</a>
+            <!-- ... rest of your nav bar ... -->
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}
+        <!-- Content from other templates will be inserted here -->
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-light">
+        <!-- Your footer content -->
+        <div class="container text-center">
+            <span class="text-muted">&copy; 2023 DISC Application</span>
+        </div>
+    </footer>
+
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+... (use actual hash)" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+... (use actual hash)" crossorigin="anonymous"></script>
+
+    <!-- Block for additional JavaScript -->
+    {% block extra_js %}
+    <!-- Extra JavaScript can be inserted here by child templates -->
+    {% endblock %}
+</body>
+</html>
+
+BAse
+<!-- {% extends 'imageapp/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="mb-4">Welcome to DISC Application</h1>
+    <p class="lead">Detect and analyze facial symmetry using advanced image processing techniques.</p>
+    <a href="{% url 'upload_images' %}" class="btn btn-primary btn-lg">Get Started</a>
+</div>
+{% endblock %} -->
+
+
+<!-- {% extends 'imageapp/base.html' %}
+
+{% block title %}Processing Result{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1 class="mb-4">Processing Result</h1>
+        {% if image_upload.result_heatmap %}
+            <-- Display the results 
+            <h2>Heatmap</h2>
+            {% if image_upload.result_heatmap %}
+            <p>Heatmap {{ image_upload.result_heatmap.url }}.</p>
+            <img src="{{ image_upload.result_heatmap.url }}" alt="Heatmap" class="img-fluid mb-3">
+            {% else %}
+            <p>Heatmap image not available.</p>
+            {% endif %}
+            <h2>Symmetry Score</h2>
+            <p class="fs-4">{{ image_upload.result_score }}</p>
+            <a href="{{ image_upload.result_heatmap.url }}" class="btn btn-success me-2" download>Download Heatmap</a>
+            <a href="{% url 'upload_images' %}" class="btn btn-secondary">Process Another Image</a>
+        {% else %}
+            <-- Loading Spinner 
+            <div id="loadingSpinner" class="text-center mt-4">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <p class="mt-3">Processing your images, please wait...</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not image_upload.result_heatmap %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function checkProcessingStatus() {
+            fetch("{% url 'check_status' pk=image_upload.pk %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.processing_complete) {
+                        // Reload the page to display the results
+                        location.reload();
+                    } else {
+                        // Check again after a delay
+                        setTimeout(checkProcessingStatus, 5000); // Check every 5 seconds
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking processing status:', error);
+                });
+        }
+
+        // Start checking the processing status
+        checkProcessingStatus();
+    });
+</script>
+{% endif %}
+{% endblock %} -->
+
+Home
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Processing Result</title>
+</head>
+<body>
+    <h1>Processing Result</h1>
+    {% if image_upload.result_heatmap %}
+        <h2>Heatmap:</h2>
+        <img src="{{ image_upload.result_heatmap.url }}" alt="Heatmap">
+        <h2>Symmetry Score:</h2>
+        <p>{{ image_upload.result_score }}</p>
+    {% else %}
+        <p>Your images are being processed. Please refresh this page after a few moments.</p>
+    {% endif %}
+</body>
+</html> -->
+
+<!-- templates/imageapp/result.html -->
+
+Result
+<!-- 
+{% extends 'imageapp/base.html' %}
+
+{% block title %}Upload Images{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4">Upload Two Images</h1>
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Process</button>
+        </form>
+
+        <-- Loading Spinner
+        <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Processing...</span>
+            </div>
+            <p class="mt-3">Processing your images, please wait...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('uploadForm');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        form.addEventListener('submit', function() {
+            // Show the loading spinner
+            loadingSpinner.style.display = 'block';
+
+            // Disable the submit button to prevent multiple submissions
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            // Hide the form fields
+            form.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}
+ -->
+
+UPLOAD
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Images</title>
+</head>
+<body>
+    <h1>Upload Two Images</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html> -->
+
+<!-- templates/imageapp/upload.html -->

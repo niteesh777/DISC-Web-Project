@@ -1,0 +1,63 @@
+{% extends 'imageapp/base.html' %}
+
+{% block title %}Processing Result{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <h1 class="mb-4">Processing Result</h1>
+    
+    {% if image_upload.result_heatmap %}
+        <!-- Display Heatmap -->
+        <h2>Heatmap</h2>
+        <img src="{{ image_upload.result_heatmap.url }}" alt="Heatmap" class="img-fluid mb-3">
+
+        <h2>Cheek Symmetry Score</h2>
+        <p class="symmetry-score">{{ image_upload.result_score_cheek }}</p>
+        
+        <h2>Forehead Symmetry Score</h2>
+        <p class="symmetry-score">{{ image_upload.result_score_forehead }}</p>
+        
+        <!-- Action Buttons -->
+        <a href="{{ image_upload.result_heatmap.url }}" class="btn btn-success me-2" download>Download Heatmap</a>
+        <a href="{% url 'upload_images' %}" class="btn btn-secondary">Process Another Image</a>
+    {% else %}
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Processing...</span>
+            </div>
+            <p class="loading-text">Processing your images, please wait...</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not image_upload.result_heatmap %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function checkProcessingStatus() {
+            fetch("{% url 'check_status' pk=image_upload.pk %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.processing_complete) {
+                        // Reload the page to display the results
+                        location.reload();
+                    } else {
+                        // Check again after a delay
+                        setTimeout(checkProcessingStatus, 5000); // Check every 5 seconds
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking processing status:', error);
+                });
+        }
+
+        // Start checking the processing status
+        checkProcessingStatus();
+    });
+</script>
+{% endif %}
+{% endblock %}
+
+

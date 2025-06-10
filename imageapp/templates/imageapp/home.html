@@ -1,0 +1,14 @@
+{% extends 'imageapp/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h1>Welcome to DISC Application</h1>
+    <p class="lead">Detect and analyze facial symmetry using advanced image processing techniques.</p>
+    <a href="{% url 'upload_images' %}" class="btn btn-primary btn-lg">Get Started</a>
+</div>
+{% endblock %}
+
+
+
