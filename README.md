@@ -1,4 +1,4 @@
-# DISC Web App: Asynchronous Facial Symmetry Analysis Platform
+# DISC Web App (Digital Image Speckle Correlation): Asynchronous Facial Symmetry Analysis Platform
 
 This Django-based web application provides a frontend for uploading paired facial images and performing a full symmetry analysis pipeline using:
 
@@ -118,6 +118,18 @@ Benefits:
 
 ## 🖼️ Web Application Flow (Screenshots)
 
+### 📏 Why Image Alignment Matters
+
+For accurate **Digital Image Speckle Correlation (DISC)** analysis, the face in both images must remain in the **same position and orientation** within the frame. Even slight movements can distort the deformation analysis, leading to incorrect symmetry scores.
+
+#### ✅ Correct Alignment
+
+When faces are well-aligned, the system can reliably detect corresponding facial regions across both images.
+
+#### ❌ Incorrect Alignment
+
+If the subject has moved significantly (e.g., head tilted, changed expression, shifted in frame), the results may be invalid, and you'll receive an error asking to re-upload better-aligned images.
+
 1. **Home Page**
    <img width="1702" alt="Intro1" src="https://github.com/user-attachments/assets/202f0e3b-f1a2-497a-b88d-c26a4cf8d4c1" />
 
@@ -175,3 +187,4 @@ MIT License — free to modify, distribute, and build upon.
 ---
 
 For improvements, contributions, or issues, feel free to open a pull request or GitHub issue.
+
